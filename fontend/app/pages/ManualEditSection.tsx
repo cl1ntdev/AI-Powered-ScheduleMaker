@@ -1,0 +1,175 @@
+import React, { useState, useEffect, useRef } from "react";
+import { Plus, Trash2, Code, Calendar, Download, Upload, ArrowDown } from "lucide-react";
+import { ScheduleDay, ScheduleBase, DayOfWeek } from "../models/Schedule";
+import ScheduleService from "../services/Schedule";
+import GeneratedSchedule from "../components/GeneratedSchedule";
+
+export default function ManualEditSection() {
+  const [scheduleData, setScheduleData] = useState<ScheduleBase>({
+    schedule: {
+      Monday: [], Tuesday: [], Wednesday: [], Thursday: [], Friday: [], Saturday: [], Sunday: [],
+    },
+  });
+
+  // Reference for the preview section
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  const updateField = (day: DayOfWeek, index: number, field: keyof ScheduleDay, value: string) => {
+    setScheduleData((prev) => {
+      const updatedSchedule = { ...prev.schedule };
+      const updatedDayArray = [...updatedSchedule[day]];
+      updatedDayArray[index] = { ...updatedDayArray[index], [field]: value };
+      updatedSchedule[day] = updatedDayArray;
+      return { schedule: updatedSchedule };
+    });
+  };
+
+  const deleteClass = (day: DayOfWeek, index: number) => {
+    setScheduleData((prev) => {
+      const updatedSchedule = { ...prev.schedule };
+      updatedSchedule[day] = updatedSchedule[day].filter((_, i) => i !== index);
+      return { schedule: updatedSchedule };
+    });
+  };
+
+  const addClass = (day: DayOfWeek) => {
+    setScheduleData((prev) => {
+      const updatedSchedule = { ...prev.schedule };
+      const newEntry: ScheduleDay = { time: "12:00 - 1:00", meridiem: "PM", title: "New Schedule" };
+      updatedSchedule[day] = [...updatedSchedule[day], newEntry];
+      return { schedule: updatedSchedule };
+    });
+  };
+
+  // Scroll handler for imports
+  const handleImport = async () => {
+    const result = await ScheduleService.handleImportSchedule() as ScheduleBase;
+    if (result) {
+      setScheduleData(result);
+      // Timeout ensures the DOM has updated before scrolling
+      setTimeout(() => {
+        previewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-12 pb-20">
+      {/* HEADER: Transparent Background */}
+      <div className="flex items-center justify-between py-6 border-b-2 border-slate-300">
+        <div className="flex items-center gap-3">
+          <Calendar size={24} className="text-blue-700" />
+          <h1 className="text-2xl font-black text-slate-950 tracking-tight">Manual Editor</h1>
+        </div>
+
+        <div className="flex gap-3">
+          <button
+            onClick={handleImport}
+            className="flex items-center gap-2 text-sm font-bold text-slate-700 border border-slate-300 px-5 py-2.5 rounded-lg hover:bg-slate-100 transition-all active:scale-95"
+          >
+            <Upload size={16} /> Import
+          </button>
+          <button
+            onClick={() => ScheduleService.handleExportSchedule(JSON.stringify(scheduleData))}
+            className="flex items-center gap-2 text-sm font-bold text-white bg-blue-700 px-5 py-2.5 rounded-lg hover:bg-blue-800 transition-all shadow-md active:scale-95"
+          >
+            <Download size={16} /> Export
+          </button>
+        </div>
+      </div>
+
+      {/* MAIN CONTENT GRID */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 h-[75vh]">
+        
+        {/* LEFT: EDITOR (Clean white/borders) */}
+        <div className="flex flex-col border-2 border-slate-300 rounded-xl overflow-hidden bg-white shadow-lg shadow-slate-100">
+          <div className="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar">
+            {(Object.entries(scheduleData.schedule) as [DayOfWeek, ScheduleDay[]][]).map(([day, classes]) => (
+              <section key={day}>
+                <div className="flex justify-between items-center mb-5 border-b-2 border-slate-200 pb-3 sticky top-0 bg-white z-10">
+                  <h3 className="text-sm font-black text-slate-600 uppercase tracking-widest">{day}</h3>
+                  <button 
+                    onClick={() => addClass(day)} 
+                    className="text-xs font-bold text-blue-700 hover:text-blue-900 flex items-center gap-1.5"
+                  >
+                    <Plus size={14} strokeWidth={3} /> ADD SCHEDULE
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {classes.length > 0 ? (
+                    classes.map((item, idx) => (
+                      <div key={`${day}-${idx}`} className="group flex items-center justify-between p-4 border border-slate-200 rounded-xl hover:border-blue-400 hover:bg-slate-50 transition-all">
+                        <div className="flex-1 space-y-0.5">
+                          <p
+                            className="text-base font-bold text-slate-950 outline-none"
+                            contentEditable
+                            suppressContentEditableWarning
+                            onBlur={(e) => updateField(day, idx, "title", e.currentTarget.innerText)}
+                          >
+                            {item.title}
+                          </p>
+                          <div className="flex gap-2.5 text-xs text-slate-600 font-semibold tracking-wide">
+                            <span
+                              contentEditable
+                              suppressContentEditableWarning
+                              className="focus:text-slate-950 outline-none"
+                              onBlur={(e) => updateField(day, idx, "time", e.currentTarget.innerText)}
+                            >
+                              {item.time}
+                            </span>
+                            <span
+                              contentEditable
+                              suppressContentEditableWarning
+                              className="text-blue-700 font-extrabold outline-none"
+                              onBlur={(e) => updateField(day, idx, "meridiem", e.currentTarget.innerText)}
+                            >
+                              {item.meridiem}
+                            </span>
+                          </div>
+                        </div>
+                        <button onClick={() => deleteClass(day, idx)} className="opacity-0 group-hover:opacity-100 p-2.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="py-5 text-center border-2 border-dashed border-slate-200 rounded-xl">
+                      <p className="text-[11px] text-slate-400 uppercase font-black tracking-widest">Free Day</p>
+                    </div>
+                  )}
+                </div>
+              </section>
+            ))}
+          </div>
+        </div>
+
+        {/* RIGHT: JSON VIEW (Clean Dark, High Contrast Text) */}
+        <div className="flex flex-col border border-slate-800 rounded-xl overflow-hidden bg-[#0a0a0a]">
+          <div className="p-3.5 border-b border-slate-800 flex items-center gap-2.5 bg-slate-950/50">
+            <Code size={16} className="text-cyan-400" />
+            <span className="text-xs font-bold text-cyan-400 uppercase tracking-tighter">Raw Output Buffer</span>
+          </div>
+          <div className="flex-1 p-7 overflow-auto font-mono text-[13px] leading-relaxed text-slate-200 custom-scrollbar">
+            <pre>
+              {JSON.stringify(scheduleData, null, 2)}
+            </pre>
+          </div>
+        </div>
+      </div>
+
+      {/* BOTTOM: PREVIEW SECTION */}
+      <div ref={previewRef} className="mt-12 space-y-6 pt-12 border-t-2 border-slate-300">
+        <div className="flex flex-col items-center gap-3 mb-10">
+          <ArrowDown size={24} className="text-slate-400 animate-bounce" />
+          <span className="text-xs font-black text-slate-600 uppercase tracking-[0.4em]">Final Preview</span>
+        </div>
+        
+        {/* Removed card background/padding to keep it clean */}
+        <div className="overflow-hidden">
+          <GeneratedSchedule result={scheduleData} />
+        </div>
+      </div>
+    </div>
+  );
+}
