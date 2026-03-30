@@ -1,0 +1,77 @@
+# Bytecode, caches, and build artifacts
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+*.pyc
+
+# Virtual environments
+venv/
+env/
+.venv/
+.Python
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+pip-wheel-metadata/
+*.egg
+
+# Python tooling caches
+.mypy_cache/
+.pytest_cache/
+.cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# IDEs and editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs and databases
+*.log
+logs/
+*.sqlite3
+*.db
+
+# Secrets / env files (do not include credentials in the image)
+.env
+.env.*
+secrets.env
+credentials
+aws_credentials
+
+# Git
+.git/
+.gitignore
+
+# Docker-related (don't ignore Dockerfile if you need it in build context)
+# (Leave Dockerfile so it can be used during build.)
+# If you want to exclude docker-compose files, uncomment:
+# docker-compose*.yml
+
+# Node / frontend (if present in repo)
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+.pnpm-debug.log
+
+# Python dependency caches
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Misc
+*.swp
+*.swo
+*.tmp
