@@ -4,7 +4,7 @@ import { Context } from "../models/Context";
 const url = "http://127.0.0.1:8011/";
 
 
-export async function SendContext(context: Context[],userPrompt) {
+export async function SendContext(context: Context[],userPrompt:string) {
   console.log("context", context, "userPrompt")
   const payload = {
     context,
@@ -17,6 +17,7 @@ export async function SendContext(context: Context[],userPrompt) {
     },
     body: JSON.stringify(payload),
   });
-  console.log("the resp from backend",response)
-  return response.json()
+  const data = await response.json();
+  console.log("the resp from backend", data)
+  return data
 }

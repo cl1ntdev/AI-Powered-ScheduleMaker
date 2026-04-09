@@ -1,12 +1,16 @@
+import { Schedule } from "../models/Schedule";
+
+// hanldes improt and export of schedules
 const ScheduleService = {
-  handleExportSchedule: (result: string) => {
-    console.log("exporting")
+  handleExportSchedule: (result: Schedule) => {
+    console.log("exporting", result);
+    const str_result = JSON.stringify(result, null, 2);
     if (!result) {
       alert("No schedule to export.");
       return;
     }
 
-    const blob = new Blob([result], { type: "application/json" });
+    const blob = new Blob([str_result], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -14,7 +18,7 @@ const ScheduleService = {
     a.click();
     URL.revokeObjectURL(url);
   },
-  handleImportSchedule: () => {
+  handleImportSchedule: (): Promise<Schedule> => {
     return new Promise((resolve, reject) => {
       const input = document.createElement("input");
       input.type = "file";
@@ -22,14 +26,14 @@ const ScheduleService = {
       input.onchange = (e) => {
         const file = (e.target as HTMLInputElement).files?.[0];
         if (!file) return;
-    
+
         const reader = new FileReader();
         reader.onload = (event) => {
           const contents = event.target?.result;
           if (contents) {
             try {
               const data = JSON.parse(contents as string);
-              resolve(data); 
+              resolve(data as Schedule); // Typecast the parsed JSON
             } catch (err) {
               reject("Invalid JSON file");
             }
@@ -38,11 +42,10 @@ const ScheduleService = {
         reader.onerror = () => reject("File reading failed");
         reader.readAsText(file);
       };
-    
+
       input.click();
     });
-  
-  }
-}
+  },
+};
 
 export default ScheduleService;

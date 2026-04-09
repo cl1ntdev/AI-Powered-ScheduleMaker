@@ -6,6 +6,9 @@ import {
   StyleSheet,
 } from "@react-pdf/renderer";
 
+import { Schedule } from "../models/Schedule";
+
+
 const styles = StyleSheet.create({
   page: { padding: 30, backgroundColor: "#f8fafc", fontFamily: "Helvetica" },
   header: {
@@ -66,7 +69,7 @@ const styles = StyleSheet.create({
 });
 
 interface pdfConverterProps {
-  schedule: any;
+  schedule: Schedule;
 }
 
 

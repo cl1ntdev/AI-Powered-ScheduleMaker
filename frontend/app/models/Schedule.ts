@@ -17,7 +17,7 @@ export interface ScheduleDay {
   title: string; 
 }
 
-export interface Schedule {
+export interface Schedule { // this the one use as result
   Monday: ScheduleDay[];
   Tuesday: ScheduleDay[];
   Wednesday: ScheduleDay[];
@@ -25,10 +25,4 @@ export interface Schedule {
   Friday: ScheduleDay[];
   Saturday: ScheduleDay[];
   Sunday: ScheduleDay[];
-}
-
-export interface ScheduleDay {
-  time: string;
-  meridiem: string;
-  title: string;  
 }

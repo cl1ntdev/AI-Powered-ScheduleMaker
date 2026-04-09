@@ -1,29 +1,38 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { Context } from "../models/ContextSend";
+import { Context } from "../models/Context";
 import { SendContext } from "../api/SendContext";
 import GeneratedSchedule from "../components/GeneratedSchedule";
 import ContextModal from "../components/ContextModal";
 import ScheduleService from "../services/Schedule";
+import { Schedule } from "../models/Schedule";
 
 const GenerationSection = () => {
   const [contexts, setContexts] = useState<Context[]>([]);
   const [userPrompt, setUserPrompt] = useState<string>("");
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<Schedule>({
+    Monday: [],
+    Tuesday: [],
+    Wednesday: [],
+    Thursday: [],
+    Friday: [],
+    Saturday: [],
+    Sunday: [],
+  });
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   const resultsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (result) {
+    if (result && result.Monday && result.Monday.length > 0) {
       const scrollTimeout = setTimeout(() => {
-        resultsRef.current?.scrollIntoView({ 
-          behavior: "smooth", 
-          block: "start" 
+        resultsRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
         });
-      }, 100); 
-  
+      }, 100);
+
       return () => clearTimeout(scrollTimeout);
     }
   }, [result]);
@@ -48,8 +57,20 @@ const GenerationSection = () => {
   const handleGenerateSchedule = async () => {
     setIsGenerating(true);
     try {
-      const res = await SendContext(contexts, userPrompt);
-      setResult(res);
+      let res = (await SendContext(contexts, userPrompt)) as any;
+      
+      if (typeof res === "string") {
+        try {
+          res = JSON.parse(res);
+        } catch (error) {
+          console.error("Failed to parse generated schedule string:", error);
+        }
+      }
+
+      const safeSchedule = (res.schedule ? res.schedule : res) as Schedule;
+      
+      console.log("Parsed result is ", safeSchedule);
+      setResult(safeSchedule);
     } catch (e) {
       console.error(e);
     } finally {
@@ -67,7 +88,8 @@ const GenerationSection = () => {
           </span>
         </h1>
         <p className="text-lg text-slate-500 max-w-2xl mx-auto font-medium">
-          Input your context and let the algorithm do the heavy lifting. - cl1ntdev
+          Input your context and let the algorithm do the heavy lifting. -
+          cl1ntdev
         </p>
       </div>
 
@@ -81,15 +103,27 @@ const GenerationSection = () => {
               >
                 + Add Context
               </button>
-              
+
               <div className="flex gap-2">
                 <button
+                  type="button"
                   onClick={async () => {
-                    // Added await and type handling
-                    const imported = await ScheduleService.handleImportSchedule();
-                    if (imported) {
-                      console.log("The result from import is", imported);
-                      setResult(imported);
+                    try {
+                      let imported = (await ScheduleService.handleImportSchedule()) as any;
+                      if (imported) {
+                        // Ensure it's parsed if it comes back as a JSON string
+                        if (typeof imported === "string") {
+                          imported = JSON.parse(imported);
+                        }
+                        
+                        // Extract wrapped data to strictly match the Schedule interface
+                        const safeImport = (imported.schedule ? imported.schedule : imported) as Schedule;
+                        
+                        console.log("The result from import is", safeImport);
+                        setResult(safeImport);
+                      }
+                    } catch (error) {
+                      console.error("Failed to parse imported schedule", error);
                     }
                   }}
                   className="text-sm font-bold text-slate-600 hover:bg-slate-50 border border-slate-200 px-5 py-2.5 rounded-xl transition-all"
@@ -97,8 +131,25 @@ const GenerationSection = () => {
                   Import Schedule
                 </button>
                 <button
-                  onClick={() => ScheduleService.handleExportSchedule(result)}
-                  disabled={!result}
+                  type="button"
+                  onClick={() => {
+                    if (result) {
+                      let exportData = result as any;
+                      
+                      if (typeof exportData === "string") {
+                        try {
+                          exportData = JSON.parse(exportData);
+                        } catch (e) {
+                          console.error("Failed to parse result before exporting");
+                        }
+                      }
+                      
+                      const finalExportData = (exportData.schedule ? exportData.schedule : exportData) as Schedule;
+                      
+                      ScheduleService.handleExportSchedule(finalExportData);
+                    } 
+                  }}
+                  disabled={!result || (result.Monday && result.Monday.length === 0)}
                   className="text-sm font-bold text-slate-600 hover:bg-slate-50 border border-slate-200 px-5 py-2.5 rounded-xl transition-all disabled:opacity-50"
                 >
                   Export Schedule
@@ -111,7 +162,7 @@ const GenerationSection = () => {
                 No contexts yet. Add some to get started!
               </div>
             )}
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
               {contexts.map((ctx, index) => (
                 <div
@@ -121,7 +172,11 @@ const GenerationSection = () => {
                 >
                   <div className="flex justify-between items-center">
                     <span className="font-bold text-slate-800">
-                      {ctx.title || <span className="text-slate-400 italic">Untitled Context</span>}
+                      {ctx.title || (
+                        <span className="text-slate-400 italic">
+                          Untitled Context
+                        </span>
+                      )}
                     </span>
                     <button
                       onClick={(e) => handleRemoveContext(e, index)}
@@ -168,9 +223,11 @@ const GenerationSection = () => {
         />
       )}
 
-      {/* 3. Wrap the results in the ref div */}
+      {/* Wrap the results in the ref div */}
       <div ref={resultsRef} className="pt-4">
-        {result && <GeneratedSchedule result={result} />}
+        {result && (
+          <GeneratedSchedule result={result} />
+        )}
       </div>
     </div>
   );
