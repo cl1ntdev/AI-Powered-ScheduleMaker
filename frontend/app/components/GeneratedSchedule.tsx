@@ -5,10 +5,11 @@ import { PDFDownloadLink } from "@react-pdf/renderer";
 import { Schedule, ScheduleDay } from "../models/Schedule";
 
 interface GeneratedScheduleProps {
-  result: Schedule;
+  result: Schedule,
+  onUpdate: (sched: Schedule) => void;
 }
 
-const GeneratedSchedule = ({ result }: GeneratedScheduleProps) => {
+const GeneratedSchedule = ({ result,onUpdate }: GeneratedScheduleProps) => {
   const [editableSchedule, setEditableSchedule] = useState<Schedule | null>(
     null,
   );
@@ -52,6 +53,7 @@ const GeneratedSchedule = ({ result }: GeneratedScheduleProps) => {
     
     newSchedule[day] = updatedDay;
     setEditableSchedule(newSchedule);
+    onUpdate(newSchedule)
   };
 
   return (

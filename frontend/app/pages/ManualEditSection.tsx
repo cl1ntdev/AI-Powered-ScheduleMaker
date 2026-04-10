@@ -75,7 +75,7 @@ export default function ManualEditSection() {
           return; // Exit early if parsing fails
         }
       }
-
+      // this needs to be optimized this code is ass
       if (result) {
         const importedData = (
           result.schedule ? result.schedule : result
@@ -113,6 +113,10 @@ export default function ManualEditSection() {
       alert("Invalid schedule file.");
     }
   };
+  
+  const handleUpdate = (sched:Schedule) => {
+    setScheduleData(sched)
+  }
 
   return (
     <div className="flex flex-col gap-12 pb-20">
@@ -262,7 +266,7 @@ export default function ManualEditSection() {
 
         <div className="overflow-hidden">
           {/* Note: If GeneratedSchedule expects a wrapper object, you may need to pass { schedule: scheduleData } instead */}
-          <GeneratedSchedule result={{ schedule: scheduleData } as any} />
+          <GeneratedSchedule result={{ schedule: scheduleData } as any} onUpdate={handleUpdate} />
         </div>
       </div>
     </div>
