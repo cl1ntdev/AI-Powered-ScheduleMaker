@@ -226,7 +226,9 @@ const GenerationSection = () => {
       {/* Wrap the results in the ref div */}
       <div ref={resultsRef} className="pt-4">
         {result && (
-          <GeneratedSchedule result={result} />
+          <GeneratedSchedule result={result} onUpdate={() => {
+            // nothing goes here since it does not require updating
+          }} />
         )}
       </div>
     </div>
