@@ -10,7 +10,7 @@ export async function SendContext(context: Context[],userPrompt:string) {
     context,
     userPrompt,
   }
-  const response = await fetch(url + "context", {
+  const response = await fetch(url + "/context", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
