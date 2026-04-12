@@ -8,7 +8,6 @@ import {
 
 import { Schedule } from "../models/Schedule";
 
-
 const styles = StyleSheet.create({
   page: { padding: 30, backgroundColor: "#f8fafc", fontFamily: "Helvetica" },
   header: {
@@ -72,9 +71,8 @@ interface pdfConverterProps {
   schedule: Schedule;
 }
 
-
 const PdfGenerator = ({ schedule }: pdfConverterProps) => {
-  const days = Object.keys(schedule);
+  const days = Object.keys(schedule) as (keyof Schedule)[];
 
   return (
     <Document>
@@ -85,7 +83,8 @@ const PdfGenerator = ({ schedule }: pdfConverterProps) => {
         <View style={styles.grid}>
           {days.map((day) => {
             const tasks = schedule[day];
-            if (!tasks || tasks.length === 0) return null;
+            
+            if (!tasks || !Array.isArray(tasks) || tasks.length === 0) return null;
 
             return (
               <View key={day} style={styles.dayCard}>
@@ -114,4 +113,4 @@ const PdfGenerator = ({ schedule }: pdfConverterProps) => {
   );
 };
 
-export default  PdfGenerator ;
+export default PdfGenerator;
