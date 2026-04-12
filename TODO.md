@@ -2,3 +2,4 @@
 - lint errors
 - login to save data ? 
 - ocr
+- sanitize endpoints
