@@ -55,28 +55,32 @@ const GenerationSection = () => {
   };
 
   const handleGenerateSchedule = async () => {
-    setIsGenerating(true);
-    try {
-      let res = (await SendContext(contexts, userPrompt)) as any;
-      
-      if (typeof res === "string") {
-        try {
-          res = JSON.parse(res);
-        } catch (error) {
-          console.error("Failed to parse generated schedule string:", error);
+      setIsGenerating(true);
+      try {
+        let res = (await SendContext(contexts, userPrompt)) as any;
+        // cus res initailly is a string
+        if (res && res.data) {
+          res = res.data;
         }
+        
+        if (typeof res === "string") {
+          try {
+            res = JSON.parse(res);
+          } catch (error) {
+            console.error("Failed to parse generated schedule string:", error);
+          }
+        }
+  
+        const safeSchedule = (res.schedule ? res.schedule : res) as Schedule; // converted to obj 
+        
+        console.log("Parsed clean result is: ", safeSchedule);
+        setResult(safeSchedule);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setIsGenerating(false);
       }
-
-      const safeSchedule = (res.schedule ? res.schedule : res) as Schedule;
-      
-      console.log("Parsed result is ", safeSchedule);
-      setResult(safeSchedule);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsGenerating(false);
-    }
-  };
+    };
 
   return (
     <div className="flex flex-col gap-10">
