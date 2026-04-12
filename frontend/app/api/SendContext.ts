@@ -1,7 +1,7 @@
 import { Context } from "../models/Context";
+import { URL }  from "../utils/global";
 
-
-const url = "http://127.0.0.1:8011/";
+const url = URL.api_url;
 
 
 export async function SendContext(context: Context[],userPrompt:string) {
