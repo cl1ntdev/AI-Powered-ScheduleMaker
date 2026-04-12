@@ -22,7 +22,7 @@ def context_convert(context: list[Context]):
 def ai_service(context,userPrompt):
     converted_context = context_convert(context)
     user_input_string = "\n".join(converted_context)
-    print("prompt",prompt1)
+    # print("prompt",prompt1)
     response = client.chat.completions.create(
         model="openai/gpt-oss-120b", 
         messages=[
