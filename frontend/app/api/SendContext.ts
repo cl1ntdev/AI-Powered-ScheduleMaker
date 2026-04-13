@@ -5,7 +5,7 @@ const url = URL.api_url;
 
 
 export async function SendContext(context: Context[],userPrompt:string) {
-  console.log("context", context, "userPrompt")
+  console.log("context", context, "userPrompt", userPrompt)
   const payload = {
     context,
     userPrompt,
